@@ -5,18 +5,17 @@
     android:layout_gravity="center"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="10dp"
+    android:layout_margin="5dp"
     android:foregroundGravity="center"
     card_view:cardBackgroundColor="@color/white"
-    card_view:cardCornerRadius="12dp"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp">
+    card_view:cardCornerRadius="6dp">
 
     <RelativeLayout
         android:id="@+id/back"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF">
+        android:background="#FFFFFF"
+        android:visibility="invisible">
 
         <FrameLayout
             android:id="@+id/results"
@@ -103,14 +102,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/back_category"
-                    android:layout_alignParentRight="true"
-                    android:textColor="#757575"
-                    android:text="Family"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/back_nsfw"
                     android:layout_alignParentRight="true"
                     android:textColor="#757575"
                     android:text="Family"/>
@@ -218,15 +209,18 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/category"
+                    android:id="@+id/nsfw"
                     android:layout_alignParentRight="true"
-                    android:textColor="#757575"
-                    android:text="Family"/>
+                    android:textColor="#EEEEEE"
+                    android:background="@drawable/nsfw"
+                    android:layout_marginRight="5dp"
+                    android:text="NSFW"
+                    android:gravity="center_horizontal" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/nsfw"
+                    android:id="@+id/category"
                     android:layout_alignParentRight="true"
                     android:textColor="#757575"
                     android:text="Family"/>

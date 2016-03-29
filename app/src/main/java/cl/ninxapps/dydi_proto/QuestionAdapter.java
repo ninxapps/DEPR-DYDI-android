@@ -103,7 +103,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             FlipAnimation flipAnimation = new FlipAnimation(v.vFront, v.vBack);
 
             if (vote == -1){
-                v.vBackText.setText(q.noCount + " people out of "+(q.noCount+q.yesCount)+" voted like you");
+                v.vBackText.setText(q.noCount + " people out of " + (q.noCount + q.yesCount) + " voted like you");
                 answer.setBackgroundColor(Color.rgb(255, 0, 0));
             } else {
                 v.vBackText.setText(q.yesCount + " people out of "+(q.noCount+q.yesCount)+" voted like you");
