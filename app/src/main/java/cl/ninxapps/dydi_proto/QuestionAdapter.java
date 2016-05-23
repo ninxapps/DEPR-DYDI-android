@@ -1,7 +1,14 @@
 package cl.ninxapps.dydi_proto;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,9 +29,73 @@ import java.util.Random;
 public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionViewHolder> {
 
     private List<Question> questionList;
+    private Context mContext;
+    private int[] colors;
+    private int visibleThreshold = 5;
+    private int firstVisibleItem, lastVisibleItem, height;
+    private boolean loading;
 
-    public QuestionAdapter(List<Question> questionList) {
+    public QuestionAdapter(List<Question> questionList, Context mContext, RecyclerView recyclerView) {
         this.questionList = questionList;
+        this.mContext = mContext;
+        colors = new int[8];
+        colors[0] = Color.parseColor("#666699");
+        colors[1] = Color.parseColor("#336699");
+        colors[2] = Color.parseColor("#CC6666");
+        colors[3] = Color.parseColor("#6699FF");
+        colors[4] = Color.parseColor("#666666");
+        colors[5] = Color.parseColor("#9966CC");
+        colors[6] = Color.parseColor("#669966");
+        colors[7] = Color.parseColor("#CC66CC");
+
+        height = recyclerView.getMeasuredHeight();
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private int state = RecyclerView.SCROLL_STATE_IDLE;
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                state = RecyclerView.SCROLL_STATE_SETTLING;
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState){
+
+                if (newState == recyclerView.SCROLL_STATE_IDLE && state != newState){
+                    state = newState;
+                    final LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+                    lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
+                    firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
+
+                    if (lastVisibleItem != firstVisibleItem){
+
+                        Rect firstRect = new Rect();
+                        Rect lastRect = new Rect();
+
+                        View firstView = linearLayoutManager.getChildAt(0);
+                        View lastView = linearLayoutManager.getChildAt(1);
+
+                        if (firstView != null && lastView != null){
+                            firstView.getGlobalVisibleRect(firstRect);
+                            lastView.getGlobalVisibleRect(lastRect);
+
+                            if (firstRect.height() > lastRect.height()){
+                                recyclerView.smoothScrollToPosition(firstVisibleItem);
+                            } else {
+                                recyclerView.smoothScrollToPosition(lastVisibleItem);
+                            }
+
+                        }
+
+
+                    }
+
+                }
+
+            }
+        });
     }
 
 
@@ -34,30 +105,33 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     }
 
     @Override
-    public void onBindViewHolder(QuestionViewHolder contactViewHolder, int i) {
+    public void onBindViewHolder(QuestionViewHolder questionVH, int i) {
         Question q = questionList.get(i);
-        contactViewHolder.vText.setText(q.text);
-        contactViewHolder.vComment.setText("" + q.comments);
-        contactViewHolder.vVote.setText("" + (q.yesCount + q.noCount));
-        contactViewHolder.vPercent.setText(q.yesCount + "%");
+        questionVH.vText.setText(q.text);
 
-        contactViewHolder.tUp.setOnClickListener(new VoteListener(q, contactViewHolder, i, 1));
-        contactViewHolder.tDown.setOnClickListener(new VoteListener(q, contactViewHolder, i, -1));
+        questionVH.tUp.setOnClickListener(new VoteListener(q, questionVH, i, 1));
+        questionVH.tDown.setOnClickListener(new VoteListener(q, questionVH, i, -1));
+
+        questionVH.vContent.setBackgroundColor(colors[i % colors.length]);
 
         if (q.answered) {
-            if (q.answer == -1){
-                contactViewHolder.answer.setBackgroundColor(Color.rgb(255, 0, 0));
+            /*if (q.answer == -1){
+                questionVH.answer.setBackgroundColor(Color.rgb(255, 0, 0));
             } else {
-                contactViewHolder.answer.setBackgroundColor(Color.rgb(0, 255, 0));
-            }
-            contactViewHolder.circle.setColorFilter(q.color);
-            contactViewHolder.circle.setRotation(q.yesCount * -180 / 100);
+                questionVH.answer.setBackgroundColor(Color.rgb(0, 255, 0));
+            }*/
 
-            contactViewHolder.vFront.setVisibility(View.INVISIBLE);
-            contactViewHolder.vBack.setVisibility(View.VISIBLE);
+            questionVH.vOptions.setVisibility(View.INVISIBLE);
+            questionVH.vResults.setVisibility(View.VISIBLE);
         } else {
-            contactViewHolder.vBack.setVisibility(View.INVISIBLE);
-            contactViewHolder.vFront.setVisibility(View.VISIBLE);
+            questionVH.vResults.setVisibility(View.INVISIBLE);
+            questionVH.vOptions.setVisibility(View.VISIBLE);
+        }
+
+        if (q.nsfw){
+            questionVH.vNsfw.setVisibility(View.VISIBLE);
+        } else {
+            questionVH.vNsfw.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -77,16 +151,10 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
         public Question vote(QuestionViewHolder v, Question q) {
             // do it
-            ImageView circle = v.circle;
-            TextView percentView = v.vPercent;
-
-            ImageView answer = v.answer;
 
             Random ran = new Random();
             q.yesCount = ran.nextInt(100);
             q.noCount = 100 - q.yesCount;
-
-            percentView.setText(q.yesCount + "%");
 
             if (q.yesCount < 50) {
                 q.color = Color.rgb(255, 255/50*(q.yesCount), 0);
@@ -97,22 +165,42 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             q.answer = vote;
             q.answered = true;
 
-            circle.setColorFilter(q.color);
-            circle.setRotation(0);
-
-            FlipAnimation flipAnimation = new FlipAnimation(v.vFront, v.vBack);
+            int width = v.vCard.getWidth();
 
             if (vote == -1){
-                v.vBackText.setText(q.noCount + " people out of " + (q.noCount + q.yesCount) + " voted like you");
-                answer.setBackgroundColor(Color.rgb(255, 0, 0));
+                v.vResultText.setText(q.noCount + " people out of " + (q.noCount + q.yesCount) + " voted like you");
             } else {
-                v.vBackText.setText(q.yesCount + " people out of "+(q.noCount+q.yesCount)+" voted like you");
-                answer.setBackgroundColor(Color.rgb(0, 255, 0));
-                flipAnimation.reverse();
+                v.vResultText.setText(q.yesCount + " people out of " + (q.noCount + q.yesCount) + " voted like you");
             }
 
-            v.vCard.startAnimation(flipAnimation);
-            circle.animate().rotationBy(q.yesCount*-180/100).start();
+            final QuestionViewHolder fVH = v;
+            int height = v.vContent.getMeasuredHeight();
+            ValueAnimator anim = ValueAnimator.ofInt(height, (int)(height*0.8));
+            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    int val = (Integer) valueAnimator.getAnimatedValue();
+                    ViewGroup.LayoutParams layoutParams = fVH.vContent.getLayoutParams();
+                    layoutParams.height= val;
+                    fVH.vContent.setLayoutParams(layoutParams);
+                }
+            });
+            anim.setDuration(300);
+            anim.start();
+
+
+            /*String bgColor = "voteScale" + (int)Math.floor(q.yesCount*0.08);
+            Log.i("COLOR", bgColor);
+            try {
+                int id = R.color.class.getField(bgColor).getInt(null);
+                v.vBack.setBackgroundColor(ContextCompat.getColor(mContext, id));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }*/
+
+            //v.vCard.startAnimation(flipAnimation);
 
             return q;
 
@@ -137,24 +225,21 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
     public class QuestionViewHolder extends RecyclerView.ViewHolder {
 
-        protected CardView vCard;
-        protected RelativeLayout vFront;
-        protected RelativeLayout vBack;
+        protected RelativeLayout vCard;
+        protected RelativeLayout vContent;
         protected TextView vText;
-        protected TextView vBackText;
         protected TextView vPercent;
         protected TextView vCategory;
         protected TextView vDate;
         protected TextView vNsfw;
-        protected TextView vComment;
-        protected TextView vVote;
+        protected TextView vStats;
+        protected TextView vResultText;
         protected ImageButton tUp;
         protected ImageButton tDown;
-        protected FrameLayout options;
-        protected FrameLayout results;
-        protected ImageView answer;
-        protected ImageView circle;
+        protected FrameLayout vOptions;
+        protected RelativeLayout vResults;
         protected Question q;
+
 
         public QuestionViewHolder(View v, int position) {
             super(v);
@@ -162,24 +247,20 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             final QuestionViewHolder self = this;
             q = questionList.get(position);
 
-            vCard =  (CardView) v.findViewById(R.id.card_view);
-            vFront =  (RelativeLayout) v.findViewById(R.id.front);
-            vBack =  (RelativeLayout) v.findViewById(R.id.back);
-
+            vCard =  (RelativeLayout) v.findViewById(R.id.card_view);
+            vContent =  (RelativeLayout) v.findViewById(R.id.content);
+            // vBack =  (RelativeLayout) v.findViewById(R.id.back);
 
             vText =  (TextView) v.findViewById(R.id.text);
-            vBackText =  (TextView) v.findViewById(R.id.back_text);
 
-            vPercent =  (TextView) v.findViewById(R.id.percent);
-            vComment =  (TextView) v.findViewById(R.id.comment);
-            vVote =  (TextView) v.findViewById(R.id.vote);
+            vCategory =  (TextView) v.findViewById(R.id.category);
+            vNsfw =  (TextView) v.findViewById(R.id.nsfw);
 
-            options =  (FrameLayout) v.findViewById(R.id.options);
-            results =  (FrameLayout) v.findViewById(R.id.results);
-            answer =  (ImageView) v.findViewById(R.id.answer);
+            vStats =  (TextView) v.findViewById(R.id.stats);
 
-            circle = (ImageView)v.findViewById(R.id.circle);
-
+            vOptions =  (FrameLayout) v.findViewById(R.id.options);
+            vResults =  (RelativeLayout) v.findViewById(R.id.results);
+            vResultText = (TextView) v.findViewById(R.id.results_text);
 
             tUp =  (ImageButton) v.findViewById(R.id.thumb_up);
             tDown =  (ImageButton) v.findViewById(R.id.thumb_down);

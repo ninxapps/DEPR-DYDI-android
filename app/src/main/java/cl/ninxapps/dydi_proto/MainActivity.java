@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });*/
 
-        QuestionAdapter qa = new QuestionAdapter(getList(30));
+        QuestionAdapter qa = new QuestionAdapter(getList(30), this, recList);
         recList.setAdapter(qa);
 
 //        headers = new HashMap<String, String>();
@@ -140,14 +140,23 @@ public class MainActivity extends AppCompatActivity {
     private List<Question> getList(int size) {
 
         List<Question> result = new ArrayList<Question>();
+        String[] qs = {
+                "Do you piss in the shower?",
+                "Have you ever picked your nose?",
+                "Have you ever blamed someone else for your own fart and maked fun of them?",
+                "Have you ever been caught by your parents while doing it?",
+                ""
+        };
         Random rng = new Random();
         for (int i=1; i <= size; i++) {
+            int random = rng.nextInt(4);
             Question ci = new Question();
-            ci.text = generateString(rng, "AABCD EEFGH IIJKL MNOOP QRST UUVWX YZ ".toLowerCase(), rng.nextInt((100 - 20) + 1) + 20);
+            ci.text = qs[random];
             ci.comments = i;
             ci.yesCount = i;
             ci.noCount = i;
             ci.answered = false;
+            ci.nsfw = random == 3;
             result.add(ci);
         }
 
@@ -164,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         return new String(text);
     }
 
-    public void login(){
+    public void login(Context context){
 
         List<Pair<String, String>> params = new ArrayList<Pair<String, String>>() {{
             add(new Pair<>("email", "n3ggro@gmail.com"));
@@ -208,12 +217,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("FUEL", data);
                 Log.i("FUEL", headers.toString());
 
-                getQuestions();
+                getQuestions(context);
             }
         });
     }
 
-    private void getQuestions(){
+    private void getQuestions(Context context){
         Fuel.get("http://192.168.0.2:3000/api/v1/categories").responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
@@ -250,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                         result.add(ci);
                     }
 
-                    QuestionAdapter qa = new QuestionAdapter(result);
+                    QuestionAdapter qa = new QuestionAdapter(result, context, recList);
                     recList.setAdapter(qa);
 
                 } catch (Exception e) {
