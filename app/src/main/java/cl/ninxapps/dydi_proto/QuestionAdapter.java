@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -34,6 +35,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     private int visibleThreshold = 5;
     private int firstVisibleItem, lastVisibleItem, height;
     private boolean loading;
+    private int originalHeight;
 
     public QuestionAdapter(List<Question> questionList, Context mContext, RecyclerView recyclerView) {
         this.questionList = questionList;
@@ -49,6 +51,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         colors[7] = Color.parseColor("#CC66CC");
 
         height = recyclerView.getMeasuredHeight();
+        originalHeight = -1;
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             private int state = RecyclerView.SCROLL_STATE_IDLE;
@@ -114,6 +117,8 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
         questionVH.vContent.setBackgroundColor(colors[i % colors.length]);
 
+        int height = originalHeight;
+
         if (q.answered) {
             /*if (q.answer == -1){
                 questionVH.answer.setBackgroundColor(Color.rgb(255, 0, 0));
@@ -121,11 +126,22 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
                 questionVH.answer.setBackgroundColor(Color.rgb(0, 255, 0));
             }*/
 
+            ViewGroup.LayoutParams layoutParams = questionVH.vContent.getLayoutParams();
+            layoutParams.height = (int)(height*0.8);
+            questionVH.vContent.setLayoutParams(layoutParams);
+
             questionVH.vOptions.setVisibility(View.INVISIBLE);
             questionVH.vResults.setVisibility(View.VISIBLE);
+
         } else {
+            if (height > 0){
+                ViewGroup.LayoutParams layoutParams = questionVH.vContent.getLayoutParams();
+                layoutParams.height = height;
+                questionVH.vContent.setLayoutParams(layoutParams);
+            }
             questionVH.vResults.setVisibility(View.INVISIBLE);
             questionVH.vOptions.setVisibility(View.VISIBLE);
+
         }
 
         if (q.nsfw){
@@ -152,6 +168,10 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         public Question vote(QuestionViewHolder v, Question q) {
             // do it
 
+            if (originalHeight == -1){
+                originalHeight = v.vContent.getMeasuredHeight();
+            }
+
             Random ran = new Random();
             q.yesCount = ran.nextInt(100);
             q.noCount = 100 - q.yesCount;
@@ -165,8 +185,6 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             q.answer = vote;
             q.answered = true;
 
-            int width = v.vCard.getWidth();
-
             if (vote == -1){
                 v.vResultText.setText(q.noCount + " people out of " + (q.noCount + q.yesCount) + " voted like you");
             } else {
@@ -174,18 +192,28 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             }
 
             final QuestionViewHolder fVH = v;
-            int height = v.vContent.getMeasuredHeight();
+            int height = originalHeight;
+            Log.i("HEIGHT", height+"");
+
+            v.vResults.setVisibility(View.VISIBLE);
             ValueAnimator anim = ValueAnimator.ofInt(height, (int)(height*0.8));
             anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
                     int val = (Integer) valueAnimator.getAnimatedValue();
                     ViewGroup.LayoutParams layoutParams = fVH.vContent.getLayoutParams();
-                    layoutParams.height= val;
+                    layoutParams.height = val;
                     fVH.vContent.setLayoutParams(layoutParams);
                 }
             });
             anim.setDuration(300);
+            v.vOptions.animate().alpha(0f).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    fVH.vOptions.setVisibility(View.INVISIBLE);
+                    fVH.vOptions.setAlpha(1f);
+                }
+            });
             anim.start();
 
 

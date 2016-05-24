@@ -135,7 +135,8 @@
         android:id="@+id/front"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="#999999">
 
         <RelativeLayout
             android:id="@+id/results"
@@ -144,13 +145,15 @@
             android:layout_margin="5dp"
             android:visibility="visible"
             android:layout_alignParentBottom="true"
-            android:background="@color/colorPrimaryDark"
-            >
+            android:background="@color/colorPrimaryDark">
 
             <TextView
                 android:id="@+id/results_text"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="25dp"
+                android:gravity="center"/>
 
         </RelativeLayout>
 
