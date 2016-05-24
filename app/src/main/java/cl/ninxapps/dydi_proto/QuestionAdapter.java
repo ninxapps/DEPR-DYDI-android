@@ -21,6 +21,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 import java.util.Random;
 
@@ -165,6 +167,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             this.vote = vote;
         }
 
+        //Called when a person votes through hand icons
         public Question vote(QuestionViewHolder v, Question q) {
             // do it
 
@@ -185,11 +188,33 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             q.answer = vote;
             q.answered = true;
 
+            /*
             if (vote == -1){
                 v.vResultText.setText(q.noCount + " people out of " + (q.noCount + q.yesCount) + " voted like you");
             } else {
                 v.vResultText.setText(q.yesCount + " people out of " + (q.noCount + q.yesCount) + " voted like you");
             }
+            */
+
+            int percent = (int) Math.round(q.yesCount*1.0/(q.noCount+q.yesCount)*100.0);
+
+            if(percent <= 100 && percent > 75){
+                v.vResultIcon.setImageResource(R.drawable.very_normal);
+                v.vResultIconText.setText("Normal");
+            } else if (percent <= 75 && percent > 50){
+                v.vResultIcon.setImageResource(R.drawable.kinda_normal);
+                v.vResultIconText.setText("Kinda normal");
+            } else if (percent <= 50 && percent > 40){
+                v.vResultIcon.setImageResource(R.drawable.not_normal);
+                v.vResultIconText.setText("Not normal");
+            } else if (percent <= 40 && percent > 20){
+                v.vResultIcon.setImageResource(R.drawable.weird);
+                v.vResultIconText.setText("Weird");
+            } else if (percent <= 20){
+                v.vResultIcon.setImageResource(R.drawable.very_weird);
+                v.vResultIconText.setText("Very weird");
+            }
+            v.vResultText.setText(percent+"% think this is normal");
 
             final QuestionViewHolder fVH = v;
             int height = originalHeight;
@@ -262,11 +287,13 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         protected TextView vNsfw;
         protected TextView vStats;
         protected TextView vResultText;
+        protected TextView vResultIconText;
         protected ImageButton tUp;
         protected ImageButton tDown;
         protected FrameLayout vOptions;
         protected RelativeLayout vResults;
         protected Question q;
+        protected ImageView vResultIcon;
 
 
         public QuestionViewHolder(View v, int position) {
@@ -288,7 +315,9 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
             vOptions =  (FrameLayout) v.findViewById(R.id.options);
             vResults =  (RelativeLayout) v.findViewById(R.id.results);
+            vResultIcon = (ImageView) v.findViewById(R.id.results_icon);
             vResultText = (TextView) v.findViewById(R.id.results_text);
+            vResultIconText = (TextView) v.findViewById(R.id.results_icon_text);
 
             tUp =  (ImageButton) v.findViewById(R.id.thumb_up);
             tDown =  (ImageButton) v.findViewById(R.id.thumb_down);

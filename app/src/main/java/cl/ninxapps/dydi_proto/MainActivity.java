@@ -164,9 +164,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         String[] qs = {
                 "Do you piss in the shower?",
                 "Have you ever picked your nose?",
-                "Have you ever blamed someone else for your own fart and maked fun of them?",
+                "Have you ever blamed someone else for your own fart and made fun of them?",
                 "Have you ever been caught by your parents while doing it?",
-                ""
         };
         Random rng = new Random();
         for (int i=1; i <= size; i++) {
