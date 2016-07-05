@@ -31,4 +31,5 @@ dependencies {
     compile 'com.android.support:design:23.4.0'
 
     compile 'com.github.kittinunf.fuel:fuel-android:1.1.2' //for Android
+    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
 }
