@@ -132,6 +132,13 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             layoutParams.height = (int)(height*0.8);
             questionVH.vContent.setLayoutParams(layoutParams);
 
+            /*if (q.answer == 1) {
+                questionVH.vResultText.setBackgroundColor(ContextCompat.getColor(questionVH.vCard.getContext(), R.color.voteScale8));
+            }
+            else {
+                questionVH.vResultText.setBackgroundColor(ContextCompat.getColor(questionVH.vCard.getContext(), R.color.voteScale0));
+            }*/
+
             questionVH.vOptions.setVisibility(View.INVISIBLE);
             questionVH.vResults.setVisibility(View.VISIBLE);
 

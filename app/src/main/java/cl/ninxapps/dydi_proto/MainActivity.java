@@ -116,11 +116,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });*/
 
-        QuestionAdapter qa = new QuestionAdapter(getList(30), this, recList);
-        recList.setAdapter(qa);
+//        QuestionAdapter qa = new QuestionAdapter(getList(30), this, recList);
+//        recList.setAdapter(qa);
 
 //        headers = new HashMap<String, String>();
-//        login();
+        login(this);
+        getQuestions(this);
 
         //Sidebar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -196,11 +197,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void login(Context context){
 
         List<Pair<String, String>> params = new ArrayList<Pair<String, String>>() {{
-            add(new Pair<>("email", "n3ggro@gmail.com"));
+            add(new Pair<>("email", "jose@email.com"));
             add(new Pair<>("password", "11111111"));
         }};
 
-        Fuel.post("http://192.168.0.2:3000/auth/sign_in", params).responseString(new Handler<String>() {
+        Fuel.post("http://192.168.0.4:3000/auth/sign_in", params).responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
                 //do something when it is failure
@@ -243,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void getQuestions(Context context){
-        Fuel.get("http://192.168.0.2:3000/api/v1/categories").responseString(new Handler<String>() {
+        Fuel.get("http://192.168.0.4:3000/questions.json").responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
                 //do something when it is failure
