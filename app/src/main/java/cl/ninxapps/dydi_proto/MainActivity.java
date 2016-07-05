@@ -36,6 +36,7 @@ import com.github.kittinunf.fuel.core.Response;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -119,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        QuestionAdapter qa = new QuestionAdapter(getList(30), this, recList);
 //        recList.setAdapter(qa);
 
-//        headers = new HashMap<String, String>();
+        headers = new HashMap<String, String>();
         login(this);
         getQuestions(this);
 
@@ -201,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             add(new Pair<>("password", "11111111"));
         }};
 
-        Fuel.post("http://192.168.0.4:3000/auth/sign_in", params).responseString(new Handler<String>() {
+        Fuel.post(GlobalConstants.API+"/auth/sign_in", params).responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
                 //do something when it is failure
@@ -218,10 +219,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void success(Request request, Response response, String data) {
                 //do something when it is successful
                 Context context = getApplicationContext();
-                int duration = Toast.LENGTH_LONG;
-
-                Toast toast = Toast.makeText(context, data, duration);
-                toast.show();
 
                 Map<String, List<String>> allHeaders = response.getHttpResponseHeaders();
 
@@ -230,10 +227,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 headers.put("access-token", allHeaders.get("access-token").get(0));
 
                 Manager.Companion.getInstance().setBaseHeaders(headers);
-
-                Toast toast2 = Toast.makeText(context, headers.toString(), duration);
-                toast.show();
-
 
                 Log.i("FUEL", data);
                 Log.i("FUEL", headers.toString());
@@ -244,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void getQuestions(Context context){
-        Fuel.get("http://192.168.0.4:3000/questions.json").responseString(new Handler<String>() {
+        Fuel.get(GlobalConstants.API+"/questions.json").responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
                 //do something when it is failure
@@ -262,11 +255,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //do something when it is successful
                 Context context = getApplicationContext();
                 CharSequence text = data;
-                int duration = Toast.LENGTH_LONG;
-
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
-
 
                 try {
 
