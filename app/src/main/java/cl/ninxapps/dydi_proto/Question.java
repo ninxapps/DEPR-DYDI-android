@@ -4,6 +4,7 @@ package cl.ninxapps.dydi_proto;
  * Created by jose on 25/3/16.
  */
 public class Question {
+    protected int id;
     protected String text;
     protected String category;
     protected int yesCount;

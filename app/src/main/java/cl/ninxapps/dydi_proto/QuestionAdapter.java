@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.support.v4.content.ContextCompat;
@@ -20,11 +21,21 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.github.kittinunf.fuel.Fuel;
+import com.github.kittinunf.fuel.core.FuelError;
+import com.github.kittinunf.fuel.core.Handler;
+import com.github.kittinunf.fuel.core.Request;
+import com.github.kittinunf.fuel.core.Response;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import kotlin.Pair;
 
 /**
  * Created by jose on 25/3/16.
@@ -113,6 +124,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     public void onBindViewHolder(QuestionViewHolder questionVH, int i) {
         Question q = questionList.get(i);
         questionVH.vText.setText(q.text);
+        questionVH.vCategory.setText(q.category);
 
         questionVH.tUp.setOnClickListener(new VoteListener(q, questionVH, i, 1));
         questionVH.tDown.setOnClickListener(new VoteListener(q, questionVH, i, -1));
@@ -174,9 +186,42 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             this.vote = vote;
         }
 
+
         //Called when a person votes through hand icons
         public Question vote(QuestionViewHolder v, Question q) {
             // do it
+
+
+            final int fQ = q.id;
+
+            List<Pair<String, String>> params = new ArrayList<Pair<String, String>>() {{
+                add(new Pair<>("answer[question_id]", fQ+""));
+                add(new Pair<>("answer[choice]", vote+""));
+            }};
+
+            Fuel.post(GlobalConstants.API+"/answers", params).responseString(new Handler<String>() {
+                @Override
+                public void failure(Request request, Response response, FuelError error) {
+                    //do something when it is failure
+                    CharSequence text = "Question Faaaaaail: " + error.toString();
+                    Log.e("FUEL", error.toString());
+                    int duration = Toast.LENGTH_LONG;
+
+                    Toast toast = Toast.makeText(contactViewHolder.tDown.getContext(), text, duration);
+                    toast.show();
+                }
+
+                @Override
+                public void success(Request request, Response response, String data) {
+                    //do something when it is successful
+                    CharSequence text = "Answer ok";
+                    Log.i("FUEL", "Answer ok");
+                    int duration = Toast.LENGTH_LONG;
+
+                    Toast toast = Toast.makeText(contactViewHolder.tDown.getContext(), text, duration);
+                    toast.show();
+                }
+            });
 
             if (originalHeight == -1){
                 originalHeight = v.vContent.getMeasuredHeight();

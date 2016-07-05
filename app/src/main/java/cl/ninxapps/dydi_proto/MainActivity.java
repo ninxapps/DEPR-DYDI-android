@@ -309,7 +309,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     for (int i = 0; i < questions.length(); i++) {
                         Question ci = new Question();
+                        ci.id = questions.getJSONObject(i).getInt("id");
                         ci.text = questions.getJSONObject(i).getString("text");
+                        ci.nsfw = questions.getJSONObject(i).getBoolean("nsfw");
+                        ci.answered = questions.getJSONObject(i).getBoolean("answered");
+                        ci.yesCount = questions.getJSONObject(i).getInt("yes_count");
+                        ci.noCount = questions.getJSONObject(i).getInt("no_count");
+                        ci.category = questions.getJSONObject(i).getString("category");
+
+                        Log.i("JSON id", questions.getJSONObject(i).getInt("id")+"");
+                        Log.i("JSON ci.id", ci.id+"");
                         result.add(ci);
                     }
 
