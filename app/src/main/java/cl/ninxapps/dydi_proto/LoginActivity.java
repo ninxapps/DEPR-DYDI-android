@@ -63,8 +63,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Start the Signup activity
-                //Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
-                //startActivityForResult(intent, REQUEST_SIGNUP);
+                Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
+                startActivityForResult(intent, REQUEST_SIGNUP);
             }
         });
         loginManager = new LoginManager();
@@ -154,6 +154,8 @@ public class LoginActivity extends AppCompatActivity {
 
                 // TODO: Implement successful signup logic here
                 // By default we just finish the Activity and log them in automatically
+                if(this.progressDialog != null)
+                    this.progressDialog.dismiss();
                 this.finish();
             }
         }

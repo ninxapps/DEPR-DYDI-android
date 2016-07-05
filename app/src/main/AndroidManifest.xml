@@ -27,7 +27,8 @@
             android:name=".AskQuestionActivity"
             android:label="@string/title_activity_ask_question"
             android:theme="@style/AppTheme" />
-        <activity android:name=".LoginActivity"></activity>
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".RegisterActivity"></activity>
     </application>
 
 </manifest>

@@ -226,6 +226,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         logInStatus.setText(settings.getString("name", "Anonymous"));
     }
 
+    public void doLogout(){
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.clear();
+        editor.commit();
+        onLoginFailed();
+    }
+
     public void doLogin(final String email, final String password, final Context context){
         List<Pair<String, String>> params = new ArrayList<Pair<String, String>>() {{
             add(new Pair<>("email", email));
@@ -358,6 +366,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (id == R.id.nav_settings) {
 
+        } else if (id == R.id.nav_logout) {
+            doLogout();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
