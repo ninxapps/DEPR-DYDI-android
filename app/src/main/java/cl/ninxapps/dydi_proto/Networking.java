@@ -29,7 +29,7 @@ public class Networking {
     private String token;
 
     public Networking(){
-        api = "http://192.168.0.2:3000/api/v1";
+        api = GlobalConstants.API+"/api/v1";
     }
 
     public void get(final Context context, String resource, final Callable failure, final Callable success) {

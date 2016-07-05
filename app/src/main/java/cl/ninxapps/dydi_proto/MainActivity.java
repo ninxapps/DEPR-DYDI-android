@@ -2,6 +2,7 @@ package cl.ninxapps.dydi_proto;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private RecyclerView recList;
     private Networking net;
     private Map<String, String> headers;
+    private LoginManager loginManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,8 +122,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        QuestionAdapter qa = new QuestionAdapter(getList(30), this, recList);
 //        recList.setAdapter(qa);
 
+        //Login with the previous information.
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
+        String email = settings.getString("email", null);
+        String password = settings.getString("password", null);
+        if(email == null || password == null){
+            onLoginFailed();
+        }
+        else
+        {
+            doLogin(email, password, getApplicationContext());
+        }
+
+
+        //Initialize headers
         headers = new HashMap<String, String>();
-        login(this);
         getQuestions(this);
 
         //Sidebar
@@ -195,43 +210,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return new String(text);
     }
 
-    public void login(Context context){
+    public void onLoginFailed(){
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
 
+    public void onLoginSuccess(){
+        TextView logInStatus = (TextView)findViewById(R.id.logInStatus);
+        logInStatus.setText("Logged in");
+    }
+
+    public void doLogin(final String email, final String password, final Context context){
         List<Pair<String, String>> params = new ArrayList<Pair<String, String>>() {{
-            add(new Pair<>("email", "jose@email.com"));
-            add(new Pair<>("password", "11111111"));
+            add(new Pair<>("email", email));
+            add(new Pair<>("password", password));
         }};
 
+        boolean success = false;
         Fuel.post(GlobalConstants.API+"/auth/sign_in", params).responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
                 //do something when it is failure
-                Context context = getApplicationContext();
-                CharSequence text = "Login Faaaaaail: " + error.toString();
                 Log.e("FUEL", error.toString());
-                int duration = Toast.LENGTH_LONG;
-
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+                onLoginFailed();
             }
 
             @Override
             public void success(Request request, Response response, String data) {
+                Log.e("FUEL", data.toString());
                 //do something when it is successful
-                Context context = getApplicationContext();
+                SharedPreferences settings = context.getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
 
                 Map<String, List<String>> allHeaders = response.getHttpResponseHeaders();
 
+                //Store information in shared preferences
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("email", email);
+                editor.putString("password", password);
+                editor.commit();
+
+
+                //Make the headers for future http requests
+                Map<String, String> headers = new HashMap<String, String>();
                 headers.put("uid", allHeaders.get("uid").get(0));
                 headers.put("client",allHeaders.get("client").get(0) );
                 headers.put("access-token", allHeaders.get("access-token").get(0));
-
                 Manager.Companion.getInstance().setBaseHeaders(headers);
-
-                Log.i("FUEL", data);
-                Log.i("FUEL", headers.toString());
-
-                getQuestions(context);
+                onLoginSuccess();
             }
         });
     }
