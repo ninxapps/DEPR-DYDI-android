@@ -35,6 +35,9 @@ import com.github.kittinunf.fuel.core.Request;
 import com.github.kittinunf.fuel.core.Response;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -216,8 +219,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void onLoginSuccess(){
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
         TextView logInStatus = (TextView)findViewById(R.id.logInStatus);
-        logInStatus.setText("Logged in");
+
+
+        logInStatus.setText(settings.getString("name", "Anonymous"));
     }
 
     public void doLogin(final String email, final String password, final Context context){
@@ -243,11 +249,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 Map<String, List<String>> allHeaders = response.getHttpResponseHeaders();
 
-                //Store information in shared preferences
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString("email", email);
-                editor.putString("password", password);
-                editor.commit();
+                //Create JSON
+                try {
+                    JSONObject jObject = new JSONObject(data);
+
+                    //Store information in shared preferences
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("email", email);
+                    editor.putString("password", password);
+
+                    jObject = jObject.getJSONObject("data");
+                    editor.putString("name", jObject.getString("name"));
+                    editor.commit();
+                }
+                catch(JSONException e){
+                    Log.e("FUEL", e.toString());
+                    onLoginFailed();
+                    return;
+                }
+
 
 
                 //Make the headers for future http requests

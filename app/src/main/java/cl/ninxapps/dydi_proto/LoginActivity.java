@@ -20,6 +20,9 @@ import com.github.kittinunf.fuel.core.Manager;
 import com.github.kittinunf.fuel.core.Request;
 import com.github.kittinunf.fuel.core.Response;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,11 +115,24 @@ public class LoginActivity extends AppCompatActivity {
 
                 Map<String, List<String>> allHeaders = response.getHttpResponseHeaders();
 
-                //Store information in shared preferences
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString("email", email);
-                editor.putString("password", password);
-                editor.commit();
+                //Create JSON
+                try {
+                    JSONObject jObject = new JSONObject(data);
+
+                    //Store information in shared preferences
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("email", email);
+                    editor.putString("password", password);
+
+                    jObject = jObject.getJSONObject("data");
+                    editor.putString("name", jObject.getString("name"));
+                    editor.commit();
+                }
+                catch(JSONException e){
+                    Log.e("FUEL", e.toString());
+                    onLoginFailed();
+                    return;
+                }
 
 
                 //Make the headers for future http requests
