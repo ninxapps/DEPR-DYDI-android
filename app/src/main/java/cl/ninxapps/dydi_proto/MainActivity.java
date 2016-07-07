@@ -194,6 +194,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        //Signed in status
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
+        TextView logInStatus = (TextView) findViewById(R.id.logInStatus);
+
+        if(settings.getString("anon", "true") == "true"){
+            logInStatus.setText(settings.getString("name", "Anonymous"));
+        }
+        else {
+
+            logInStatus.setText(settings.getString("name", "Anonymous"));
+        }
     }
 
     @Override
@@ -259,11 +271,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void onLoginSuccess(){
-        SharedPreferences settings = getApplicationContext().getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
-        TextView logInStatus = (TextView)findViewById(R.id.logInStatus);
 
-
-        logInStatus.setText(settings.getString("name", "Anonymous"));
     }
 
     public void doLogout(){
@@ -271,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences.Editor editor = settings.edit();
         editor.clear();
         editor.commit();
+
         onLoginFailed();
     }
 

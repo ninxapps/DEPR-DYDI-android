@@ -151,8 +151,7 @@
                 android:id="@+id/results_icon"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:layout_marginTop="5dp"
-                android:gravity="center"
+                android:layout_marginTop="5dp"                android:gravity="center"
                 android:layout_above="@+id/results_icon_text"
                 android:layout_centerHorizontal="true" />
             <TextView
