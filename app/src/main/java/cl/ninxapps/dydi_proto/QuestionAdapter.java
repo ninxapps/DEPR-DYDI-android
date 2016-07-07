@@ -276,10 +276,12 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
             final QuestionViewHolder fVH = v;
             int height = originalHeight;
-            Log.i("HEIGHT", height+"");
+            int newHeight;
+            newHeight = height-(v.vResultIcon.getHeight()+v.vResultIconText.getHeight()+v.vResultText.getHeight()+10);
 
             v.vResults.setVisibility(View.VISIBLE);
-            ValueAnimator anim = ValueAnimator.ofInt(height, (int)(height*0.8));
+            //ValueAnimator anim = ValueAnimator.ofInt(height, (int)(height*0.75));
+            ValueAnimator anim = ValueAnimator.ofInt(height, newHeight);
             anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -361,8 +363,6 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             q = questionList.get(position);
 
             vCard =  (RelativeLayout) v.findViewById(R.id.card_view);
-            Log.e("test", "Padding set"+Integer.toString(bottomPadding));
-            vCard.setPadding(0, 0, 0, bottomPadding);
 
             vContent =  (RelativeLayout) v.findViewById(R.id.content);
             // vBack =  (RelativeLayout) v.findViewById(R.id.back);
