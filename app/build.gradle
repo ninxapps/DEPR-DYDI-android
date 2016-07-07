@@ -6,11 +6,13 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
+        vectorDrawables.useSupportLibrary = true
         applicationId "cl.ninxapps.dydi_proto"
         minSdkVersion 14
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        generatedDensities = []
     }
     buildTypes {
         release {
