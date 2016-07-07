@@ -49,8 +49,10 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     private int firstVisibleItem, lastVisibleItem, height;
     private boolean loading;
     private int originalHeight;
+    private int bottomPadding;
 
-    public QuestionAdapter(List<Question> questionList, Context mContext, RecyclerView recyclerView) {
+    public QuestionAdapter(List<Question> questionList, Context mContext, RecyclerView recyclerView, int padding) {
+        this.bottomPadding = padding;
         this.questionList = questionList;
         this.mContext = mContext;
         colors = new int[8];
@@ -112,6 +114,10 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
             }
         });
+    }
+
+    public void setBottomPadding(int padding){
+        this.bottomPadding = padding;
     }
 
 
@@ -323,7 +329,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     @Override
     public QuestionViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.question_item_card, viewGroup, false);
-        QuestionViewHolder holder = new QuestionViewHolder(itemView, i);
+        QuestionViewHolder holder = new QuestionViewHolder(itemView, i, this.bottomPadding);
 
         return holder;
     }
@@ -348,13 +354,16 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         protected ImageView vResultIcon;
 
 
-        public QuestionViewHolder(View v, int position) {
+        public QuestionViewHolder(View v, int position, int bottomPadding) {
             super(v);
             final View questionView = v;
             final QuestionViewHolder self = this;
             q = questionList.get(position);
 
             vCard =  (RelativeLayout) v.findViewById(R.id.card_view);
+            Log.e("test", "Padding set"+Integer.toString(bottomPadding));
+            vCard.setPadding(0, 0, 0, bottomPadding);
+
             vContent =  (RelativeLayout) v.findViewById(R.id.content);
             // vBack =  (RelativeLayout) v.findViewById(R.id.back);
 

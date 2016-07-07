@@ -27,6 +27,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
+import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
 import com.github.kittinunf.fuel.Fuel;
 import com.github.kittinunf.fuel.core.FuelError;
 import com.github.kittinunf.fuel.core.Handler;
@@ -53,26 +55,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private RecyclerView recList;
     private Networking net;
     private Map<String, String> headers;
-    private LoginManager loginManager = null;
+    private AHBottomNavigation bottomNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_side_bar);
 
-        /*
-        toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-        }
-        */
-
+        //Initialize recycle lists
         recList = (RecyclerView) findViewById(R.id.cardList);
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
 
+        //Old implementation
         /*ItemClickSupport.addTo(recList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
             public void onItemClicked(RecyclerView recyclerView, int position, View v) {
@@ -122,24 +119,67 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });*/
 
-//        QuestionAdapter qa = new QuestionAdapter(getList(30), this, recList);
-//        recList.setAdapter(qa);
+        bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
 
-        //Login with the previous information.
-        SharedPreferences settings = getApplicationContext().getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
-        String email = settings.getString("email", null);
-        String password = settings.getString("password", null);
-        if(email == null || password == null){
-            onLoginFailed();
-        }
-        else
-        {
-            doLogin(email, password, getApplicationContext());
-        }
+        // BOTTOM NAVIGATION
+        AHBottomNavigationItem item1 = new AHBottomNavigationItem("Latest", R.drawable.ic_latest, R.color.colorPrimaryDark);
+        AHBottomNavigationItem item2 = new AHBottomNavigationItem("Trending", R.drawable.ic_trending, R.color.colorPrimaryDark);
+        AHBottomNavigationItem item3 = new AHBottomNavigationItem("Nearby", R.drawable.ic_nav, R.color.colorPrimaryDark);
+
+        // Add items
+        bottomNavigation.addItem(item1);
+        bottomNavigation.addItem(item2);
+        bottomNavigation.addItem(item3);
+
+        // Set background color
+        bottomNavigation.setDefaultBackgroundColor(Color.parseColor("#FFFFFF"));
+
+        // Disable the translation inside the CoordinatorLayout
+        bottomNavigation.setBehaviorTranslationEnabled(false);
+
+        // Change colors
+        bottomNavigation.setAccentColor(Color.parseColor("#F63D2B"));
+        bottomNavigation.setInactiveColor(Color.parseColor("#747474"));
+
+        // Force to tint the drawable (useful for font with icon for example)
+        //bottomNavigation.setForceTint(true);
+
+        // Force the titles to be displayed (against Material Design guidelines!)
+        bottomNavigation.setForceTitlesDisplay(true);
+
+        // Use colored navigation with circle reveal effect
+        bottomNavigation.setColored(true);
+
+        // Set current item programmatically
+        bottomNavigation.setCurrentItem(1);
+
+        // Customize notification (title, background, typeface)
+        bottomNavigation.setNotificationBackgroundColor(Color.parseColor("#F63D2B"));
+
+        // Add or remove notification for each item
+        bottomNavigation.setNotification("4", 1);
+        bottomNavigation.setNotification("", 1);
+
+        // Set listeners
+        bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
+            @Override
+            public boolean onTabSelected(int position, boolean wasSelected) {
+                // Do something cool here...
+                return true;
+            }
+        });
+        bottomNavigation.setOnNavigationPositionListener(new AHBottomNavigation.OnNavigationPositionListener() {
+            @Override public void onPositionChange(int y) {
+                // Manage the new y position
+            }
+        });
+        QuestionAdapter qa = new QuestionAdapter(getList(30), this, recList, bottomNavigation.getHeight());
+        recList.setAdapter(qa);
 
 
         //Initialize headers
-        headers = new HashMap<String, String>();
+        //This will be moved
+
         getQuestions(this);
 
         //Sidebar
@@ -289,18 +329,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    private int getBottomPadding(){
+        return this.bottomNavigation.getHeight();
+    }
+
     private void getQuestions(Context context){
         Fuel.get(GlobalConstants.API+"/questions.json").responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
-                //do something when it is failure
-                Context context = getApplicationContext();
-                CharSequence text = "Faaaaaail: " + error.toString();
-                Log.e("FUEL", error.toString());
-                int duration = Toast.LENGTH_LONG;
-
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+                Log.e("server", error.toString());
             }
 
             @Override
@@ -308,6 +345,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //do something when it is successful
                 Context context = getApplicationContext();
                 CharSequence text = data;
+                Log.e("server", data.toString());
 
                 try {
 
@@ -329,8 +367,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         Log.i("JSON ci.id", ci.id+"");
                         result.add(ci);
                     }
-
-                    QuestionAdapter qa = new QuestionAdapter(result, context, recList);
+                    QuestionAdapter qa = new QuestionAdapter(result, context, recList, getBottomPadding());
                     recList.setAdapter(qa);
 
                 } catch (Exception e) {

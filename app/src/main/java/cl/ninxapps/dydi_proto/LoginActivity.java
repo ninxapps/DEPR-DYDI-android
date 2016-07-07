@@ -35,7 +35,6 @@ import kotlin.Pair;
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
-    public LoginManager loginManager = null;
     private ProgressDialog progressDialog;
 
     @BindView(R.id.input_email) EditText _emailText;
@@ -67,14 +66,13 @@ public class LoginActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQUEST_SIGNUP);
             }
         });
-        loginManager = new LoginManager();
     }
 
     public void login() {
         Log.d(TAG, "Login");
 
         if (!validate()) {
-            onLoginFailed();
+            onLoginFailed(null);
             return;
         }
 
@@ -93,6 +91,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void doLogin(final String email, final String password, final Context context){
+
+        final MainApp app = (MainApp)getApplication();
         List<Pair<String, String>> params = new ArrayList<Pair<String, String>>() {{
             add(new Pair<>("email", email));
             add(new Pair<>("password", password));
@@ -102,44 +102,43 @@ public class LoginActivity extends AppCompatActivity {
         Fuel.post(GlobalConstants.API+"/auth/sign_in", params).responseString(new Handler<String>() {
             @Override
             public void failure(Request request, Response response, FuelError error) {
-                //do something when it is failure
-                Log.e("FUEL", error.toString());
-                onLoginFailed();
+                onLoginFailed(error.toString());
             }
 
             @Override
             public void success(Request request, Response response, String data) {
                 Log.e("FUEL", data.toString());
-                //do something when it is successful
-                SharedPreferences settings = context.getSharedPreferences(GlobalConstants.PREFS_NAME, 0);
-
                 Map<String, List<String>> allHeaders = response.getHttpResponseHeaders();
 
-                //Create JSON
+
                 try {
+                    String user_email = email;
+                    String access_token = allHeaders.get("access-token").get(0);
+                    String client = allHeaders.get("client").get(0);
+
+                    //Parse JSON
                     JSONObject jObject = new JSONObject(data);
-
-                    //Store information in shared preferences
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("email", email);
-                    editor.putString("password", password);
-
                     jObject = jObject.getJSONObject("data");
-                    editor.putString("name", jObject.getString("name"));
-                    editor.commit();
+
+                    //Get data
+                    String name = jObject.getString("name");
+                    String uid = jObject.getString("uid");
+                    String provider = jObject.getString("provider");
+
+                    app.onUserDataLoaded(provider, uid, name, email, access_token, client);
                 }
                 catch(JSONException e){
                     Log.e("FUEL", e.toString());
-                    onLoginFailed();
+                    onLoginFailed("Error al contactar al servidor");
                     return;
                 }
 
 
                 //Make the headers for future http requests
                 Map<String, String> headers = new HashMap<String, String>();
-                headers.put("uid", allHeaders.get("uid").get(0));
-                headers.put("client",allHeaders.get("client").get(0) );
-                headers.put("access-token", allHeaders.get("access-token").get(0));
+                headers.put("uid",  app.getUID());
+                headers.put("client", app.getClient());
+                headers.put("access-token", app.getAccessToken());
                 Manager.Companion.getInstance().setBaseHeaders(headers);
                 onLoginSuccess();
             }
@@ -171,13 +170,17 @@ public class LoginActivity extends AppCompatActivity {
         _loginButton.setEnabled(true);
         if(this.progressDialog != null)
             this.progressDialog.dismiss();
+        Intent i = new Intent(LoginActivity.this, MainActivity.class);
+        startActivity(i);
         finish();
     }
 
-    public void onLoginFailed() {
+    public void onLoginFailed(String error) {
         if(this.progressDialog != null)
             this.progressDialog.dismiss();
-        Toast.makeText(getBaseContext(), "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show();
+
+        if(error != null)
+            Toast.makeText(getBaseContext(), error, Toast.LENGTH_LONG).show();
         _loginButton.setEnabled(true);
     }
 

@@ -9,10 +9,6 @@
     tools:openDrawer="start"
     tools:context=".MainActivity">
 
-    <include
-        android:id="@+id/tool_bar"
-        layout="@layout/tool_bar"
-        ></include>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/cardList"
